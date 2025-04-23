@@ -4,12 +4,13 @@ from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
 from services.sentiment_detector import analyze
+from schema import SentimentResponse
 
 load_dotenv()
 app = FastAPI()
 
-@app.post("/analyze")
-async def analyze_text(text: str) -> dict[str, dict[str, float]]:
+@app.post("/analyze", response_model=SentimentResponse)
+async def analyze_text(text: str) -> SentimentResponse:
     # Call the analyze function from the analysis module
     try:
         result = analyze(text)
