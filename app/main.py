@@ -3,17 +3,12 @@
 from dotenv import load_dotenv
 import os
 from fastapi import FastAPI
-from services.sentiment_detector import analyze
-from schema import SentimentResponse
+from .routes import routers
 
 load_dotenv()
 app = FastAPI()
 
-@app.post("/analyze", response_model=SentimentResponse)
-async def analyze_text(text: str) -> SentimentResponse:
-    # Call the analyze function from the analysis module
-    try:
-        result = analyze(text)
-        return {"result": result}
-    except Exception as e:
-        return {"error": str(e)}
+# Includes all routers from the routes package
+# This allows for easy addition of new routes in the future
+for router in routers:
+    app.include_router(router)

@@ -17,3 +17,8 @@ class SentimentScores(BaseModel):
 class SentimentResponse(BaseModel):
     result: SentimentScores # The result of the sentiment analysis - a dictionary with sentiment scores
     error: str | None = None # Optional error message if any error occurs during analysis
+
+### Simple Sentiment Response Schema (a simplified version of the SentimentResponse for only +/-/0 sentiment)
+class SimpleSentimentResponse(BaseModel):
+    sentiment: bool | None = None # True for positive, False for negative, None for neutral
+    error: str | None = None # Optional error message if any error occurs during analysis
