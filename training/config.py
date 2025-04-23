@@ -1,0 +1,1 @@
+# Stores configuration variables like learning rate, batch size, number of epochs, and file paths.
