@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import torch
 from torch.utils.data import Dataset
-from transformers import BertTokenizer # Pre-trained BERT tokenizer rather than a custom one - this is a common practice in NLP tasks.
+from transformers import DistilBertTokenizer # Pre-trained BERT tokenizer rather than a custom one - this is a common practice in NLP tasks.
 
 """
 Since we're using a pre-trained BERT model, we need to tokenize our text data in a way that BERT can understand.
