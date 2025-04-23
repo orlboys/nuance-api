@@ -1,0 +1,21 @@
+# Ignore Python virtual environments
+venv/
+.env/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.so
+
+# VSCode settings (optional)
+.vscode/
+
+# macOS + Windows junk
+.DS_Store
+Thumbs.db
+
+# Environment variables / secrets
+.env
+
+# Logs
+*.log
