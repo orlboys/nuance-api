@@ -11,7 +11,7 @@ async def analyze_text(text: str) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-@router.post("/analyze/full_detail", response_model=SentimentResponse)
+@router.post("/analyze_sentiment/full_detail", response_model=SentimentResponse)
 async def return_analyzed_text_detailed(text: str) -> SentimentResponse:
     # Endpoint to analyze the sentiment of a given text. GIVES FULL DETAIL - neg, neu, pos, compound
     # :param text: The text to be analyzed.
@@ -21,7 +21,7 @@ async def return_analyzed_text_detailed(text: str) -> SentimentResponse:
     # The analyze_text function is called within the route handler to perform the sentiment analysis.
     return await analyze_text(text)
 
-@router.post("/analyze", response_model=SimpleSentimentResponse)
+@router.post("/analyze_sentiment", response_model=SimpleSentimentResponse)
 async def return_analyzed_text_simplified(text: str) -> SimpleSentimentResponse:
     # Endpoint to analyze the sentiment of a given text. GIVES ONLY +, -, or 0
     # :param text: The text to be analyzed.
