@@ -6,7 +6,7 @@ router = APIRouter()
 
 async def analyze_text(text: str) -> dict:
     try:
-        result = analyze(text)
+        result = await analyze(text)
         return {"result": result}
     except Exception as e:
         return {"error": str(e)}
