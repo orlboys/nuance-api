@@ -1,0 +1,1 @@
+# Defines your model architecture, potentially utilizing pre-trained models like BERT for sequence classification.
