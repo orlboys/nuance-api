@@ -67,7 +67,7 @@ class BiasDataset(Dataset):
             max_length=self.max_length,
             padding='max_length', # Pad to max_length (common practice in NLP tasks)
             truncation=True, # Truncate if longer than max_length
-            return_tensors='pt' # Return PyTorch tensors
+            return_tensors='pt', # Return PyTorch tensors
             return_attention_mask=True,
         )
 
