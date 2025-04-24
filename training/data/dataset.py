@@ -6,6 +6,10 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 from transformers import DistilBertTokenizer # Pre-trained BERT tokenizer rather than a custom one - this is a common practice in NLP tasks.
+from config import (
+    MODEL_NAME, MAX_SEQ_LENGTH, TRUNCATION, 
+    PAD_TO_MAX_LENGTH, ADD_SPECIAL_TOKENS
+)
 
 """
 Since we're using a pre-trained DistilBERT model, we need to tokenize our text data in a way that DistilBERT can understand.
@@ -31,18 +35,15 @@ class BiasDataset(Dataset):
     Custom Dataset class for loading
     and preprocessing the bias detection dataset.
     """
-    def __init__(self, csv_file, tokenizer, max_length=512):
+    def __init__(self, csv_file):
         """
         Initializes the dataset with a CSV file, tokenizer, and maximum sequence length.
 
         Args:
             csv_file (str): Path to the CSV file containing the dataset.
-            tokenizer (BertTokenizer): Pre-trained BERT tokenizer for text encoding.
-            max_length (int): Maximum length of the tokenized sequences.
         """
         self.data = pd.read_csv(csv_file)
-        self.tokenizer = tokenizer
-        self.max_length = max_length
+        self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
         self.texts = self.data['text'].tolist() # List of texts
         self.labels = self.data['label'].tolist() # List of labels
 
@@ -63,10 +64,10 @@ class BiasDataset(Dataset):
         label = self.labels[idx] # Get the label at the given index
         encoded_text = self.tokenizer.encode_plus(
             text,
-            add_special_tokens=True, # Add [CLS] and [SEP] tokens - these are standard in BERT
-            max_length=self.max_length,
-            padding='max_length', # Pad to max_length (common practice in NLP tasks)
-            truncation=True, # Truncate if longer than max_length
+            add_special_tokens=ADD_SPECIAL_TOKENS, # Add [CLS] and [SEP] tokens - these are standard in BERT
+            max_length=MAX_SEQ_LENGTH,
+            padding='max_length' if PAD_TO_MAX_LENGTH else 'do_not_pad', # Pad to max_length (common practice in NLP tasks)
+            truncation=TRUNCATION, # Truncate if longer than max_length
             return_tensors='pt', # Return PyTorch tensors
             return_attention_mask=True,
         )
