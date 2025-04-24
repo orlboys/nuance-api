@@ -8,8 +8,8 @@ from torch.utils.data import Dataset
 from transformers import DistilBertTokenizer # Pre-trained BERT tokenizer rather than a custom one - this is a common practice in NLP tasks.
 
 """
-Since we're using a pre-trained BERT model, we need to tokenize our text data in a way that BERT can understand.
-Luckily, the Hugging Face Transformers library provides a convenient way to do this with the BertTokenizer.
+Since we're using a pre-trained DistilBERT model, we need to tokenize our text data in a way that DistilBERT can understand.
+Luckily, the Hugging Face Transformers library provides a convenient way to do this with the DistilBertTokenizer.
 The tokenizer will handle the following:
 - Preprocessing the text (lowercasing, removing special characters, etc.)
 - Tokenizing the text (breaking it down into subwords or tokens)
@@ -20,7 +20,7 @@ etc.
 """
 
 """
-NOTE: With BERT models, and specifically bert-base-lowercase, we DO NOT
+NOTE: With BERT models, and specifically distilbert-base-lowercase, we DO NOT
 - Remove stop words (BERT can handle them)
 - Use stemming or lemmatization (BERT uses subword tokenization)
 - Strip punctuation (BERT can handle it)
