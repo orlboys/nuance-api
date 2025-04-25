@@ -64,6 +64,14 @@ if os.getcwd() != os.path.dirname(os.path.abspath(__file__)):
     print("Please navigate to the training directory and run the script again.")
     sys.exit(1)
 
+if os.path.exists(CHECKPOINTS_PATH):
+    print(f"⚠️: Checkpoint path {CHECKPOINTS_PATH} already exists. Please delete it or change the NICKNAME in config.py.")
+    sys.exit(1)
+
+if not os.path.exists(CHECKPOINTS_PATH):
+    os.makedirs(CHECKPOINTS_PATH) # Create the checkpoints directory if it doesn't exist
+    print(f"✅: Checkpoint path {CHECKPOINTS_PATH} created.")
+
 ### GPU Configuration ###
 device = torch.device("cuda" if USE_CUDA else "cpu") # Check if CUDA is available and set the device accordingly
 
