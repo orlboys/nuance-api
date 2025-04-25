@@ -1,5 +1,5 @@
 # Ignore Python virtual environments
-venv/
+venv_*/
 .env/
 
 # Byte-compiled / cache files
@@ -29,3 +29,9 @@ runs/
 # Ignore PyTorch model checkpoints
 *.pth
 *.ckpt
+
+# Ignore extra data analysis scripts
+data_analysis_scripts/*
+
+# Ignore overall requirements page (is only temporary / for reference)
+requirements_overall.txt
