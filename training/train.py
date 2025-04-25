@@ -43,7 +43,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from torch.cuba.amp import autocast, GradScaler
+from torch.amp import autocast, GradScaler
 
 # custom libraries #
 from models.bias_model import BiasModel
@@ -52,7 +52,7 @@ from data.dataloader import create_dataloaders
 from config import (
     LEARNING_RATE, WEIGHT_DECAY, MAX_GRAD_NORM, OPTIMIZER_EPS, 
     NUM_EPOCHS, MODEL_NAME, BATCH_SIZE, USE_CUDA, DATASET_PATH,
-    USE_AMP, ACCUMULATION_STEPS
+    USE_AMP, ACCUMULATION_STEPS, CHECKPOINTS_PATH, NICKNAME
 )
 
 import os
@@ -141,7 +141,7 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
         labels = batch['labels'].to(device)
 
         # Forward pass (compute the model outputs)
-        with autocast(enabled=use_amp): # This enables automatic mixed precision training (if enabled in the configuration)
+        with autocast(enabled=use_amp, device_type='cuda' if USE_CUDA else 'cpu'): # This enables automatic mixed precision training (if enabled in the configuration)
             outputs = model(input_ids, attention_mask)
             loss = loss_fn(outputs, labels) # Compute the loss
 
@@ -230,7 +230,7 @@ def train():
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
 
         # Save the model checkpoint
-        torch.save(model.state_dict(), f"checkpoints/model_epoch_{epoch + 1}.pth")
+        torch.save(model.state_dict(), f"{CHECKPOINTS_PATH}/{NICKNAME}_epoch_{epoch + 1}.pth")
         print(f"Model checkpoint saved for epoch {epoch + 1}")
 
 if __name__ == "__main__":

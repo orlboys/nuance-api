@@ -3,8 +3,8 @@ MODEL_NAME         = "distilbert-base-uncased"
 NUM_LABELS         = 5
 
 ### Training Configuration ###
-NUM_EPOCHS         = 5
-BATCH_SIZE         = 16        # reduced to fit 4 GB VRAM safely
+NUM_EPOCHS         = 8         # 8 epochs for small dataset; can increase for larger datasets
+BATCH_SIZE         = 24        # reduced to fit in GPU memory
 EVAL_BATCH_SIZE    = 32        # no-grad, can be larger
 LEARNING_RATE      = 2e-5
 WEIGHT_DECAY       = 1e-2
@@ -36,4 +36,6 @@ USE_AMP            = True      # enable torch.cuda.amp for FP16 (enabled here be
 
 ### Miscellaneous ###
 SEED               = 42
-DATASET_PATH       = "data/train.csv"
+DATASET_PATH       = "data/datasets/political_bias.csv"  # Path to the training dataset
+NICKNAME           = "8_epoch_model(test)"  # Name of the model for saving/loading checkpoints
+CHECKPOINT_PATH    = f"trained_models/{NICKNAME}/checkpoint"  # Path to save the model checkpoints
