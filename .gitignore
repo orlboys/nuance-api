@@ -1,5 +1,5 @@
 # Ignore Python virtual environments
-venv/
+venv_*/
 .env/
 
 # Byte-compiled / cache files
@@ -29,3 +29,6 @@ runs/
 # Ignore PyTorch model checkpoints
 *.pth
 *.ckpt
+
+# Ignore data analysis files
+data_analysis_scripts/
