@@ -58,7 +58,7 @@ class BiasDataset(Dataset):
             idx (int): Index of the data point to retrieve.
 
         Returns:
-            dict: A dictionary containing the tokenized input IDs, attention masks, and label.
+            dict: A dictionary containing the tokenized input IDs, attention masks, and label as tensors.
         """
         text = self.texts[idx] # Get the text at the given index
         label = self.labels[idx] # Get the label at the given index
@@ -75,7 +75,7 @@ class BiasDataset(Dataset):
         return {
             'input_ids': encoded_text['input_ids'].squeeze(0), # Remove the batch dimension
             'attention_mask': encoded_text['attention_mask'].squeeze(0), # Remove the batch dimension
-            'label': torch.tensor(label, dtype=torch.long) # Convert label to tensor
+            'labels': torch.tensor(label, dtype=torch.long) # Convert label to tensor
         }
 
         """

@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import DataLoader, random_split
 from .dataset import BiasDataset
 from config import (
