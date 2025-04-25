@@ -38,4 +38,4 @@ USE_AMP            = True      # enable torch.cuda.amp for FP16 (enabled here be
 SEED               = 42
 DATASET_PATH       = "data/datasets/political_bias.csv"  # Path to the training dataset
 NICKNAME           = "8_epoch_model(test)"  # Name of the model for saving/loading checkpoints
-CHECKPOINT_PATH    = f"trained_models/{NICKNAME}/checkpoint"  # Path to save the model checkpoints
+CHECKPOINTS_PATH    = f"trained_models/{NICKNAME}/checkpoint"  # Path to save the model checkpoints
