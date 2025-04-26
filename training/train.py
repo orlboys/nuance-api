@@ -52,7 +52,8 @@ from data.dataloader import create_dataloaders
 from config import (
     LEARNING_RATE, WEIGHT_DECAY, MAX_GRAD_NORM, OPTIMIZER_EPS, 
     NUM_EPOCHS, MODEL_NAME, BATCH_SIZE, USE_CUDA, DATASET_PATH,
-    USE_AMP, ACCUMULATION_STEPS, CHECKPOINTS_PATH, NICKNAME
+    USE_AMP, ACCUMULATION_STEPS, CHECKPOINTS_PATH, NICKNAME,
+    LOG_DIR
 )
 
 import os
@@ -64,13 +65,13 @@ if os.getcwd() != os.path.dirname(os.path.abspath(__file__)):
     print("Please navigate to the training directory and run the script again.")
     sys.exit(1)
 
-if os.path.exists(CHECKPOINTS_PATH):
-    print(f"⚠️: Checkpoint path {CHECKPOINTS_PATH} already exists. Please delete it or change the NICKNAME in config.py.")
-    sys.exit(1)
-
 if not os.path.exists(CHECKPOINTS_PATH):
     os.makedirs(CHECKPOINTS_PATH) # Create the checkpoints directory if it doesn't exist
     print(f"✅: Checkpoint path {CHECKPOINTS_PATH} created.")
+
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR) # Create the log directory if it doesn't exist
+    print(f"✅: Log path {LOG_DIR} created.")
 
 ### GPU Configuration ###
 device = torch.device("cuda" if USE_CUDA else "cpu") # Check if CUDA is available and set the device accordingly
