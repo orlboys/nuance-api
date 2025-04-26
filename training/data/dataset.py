@@ -8,8 +8,10 @@ from torch.utils.data import Dataset
 from transformers import DistilBertTokenizer # Pre-trained BERT tokenizer rather than a custom one - this is a common practice in NLP tasks.
 from config import (
     MODEL_NAME, MAX_SEQ_LENGTH, TRUNCATION, 
-    PAD_TO_MAX_LENGTH, ADD_SPECIAL_TOKENS
+    PAD_TO_MAX_LENGTH, ADD_SPECIAL_TOKENS,
+    AUG_PERCENTAGE
 )
+import nlpaug.augmenter.word.synonym as nas # Synonym augmentation
 
 """
 Since we're using a pre-trained DistilBERT model, we need to tokenize our text data in a way that DistilBERT can understand.
@@ -35,7 +37,7 @@ class BiasDataset(Dataset):
     Custom Dataset class for loading
     and preprocessing the bias detection dataset.
     """
-    def __init__(self, csv_file):
+    def __init__(self, csv_file, augment=False): # augment is only True for the training set (see dataloader.py)
         """
         Initializes the dataset with a CSV file, tokenizer, and maximum sequence length.
 
@@ -46,6 +48,9 @@ class BiasDataset(Dataset):
         self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
         self.texts = self.data['text'].tolist() # List of texts
         self.labels = self.data['label'].tolist() # List of labels
+        self.augment = augment # Data augmentation flag
+        if self.augment:
+            self.augmenter = nas.SynonymAug(aug_p=AUG_PERCENTAGE, aug_src='wordnet')
 
     def __len__(self):
         return len(self.data)
@@ -62,6 +67,10 @@ class BiasDataset(Dataset):
         """
         text = self.texts[idx] # Get the text at the given index
         label = self.labels[idx] # Get the label at the given index
+
+        if self.augment:
+            text = self.augment_data(text)
+        
         encoded_text = self.tokenizer.encode_plus(
             text,
             add_special_tokens=ADD_SPECIAL_TOKENS, # Add [CLS] and [SEP] tokens - these are standard in BERT
@@ -93,3 +102,6 @@ class BiasDataset(Dataset):
         Attention mask is what BERT sees as 'mask'
             - It tells BERT which tokens to pay attention to and which ones to ignore (the padding ones).
         """
+
+    def augment_data(self, text):
+        return self.aug.augment(text) # Synonym augmentation with 10% probability
