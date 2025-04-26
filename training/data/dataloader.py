@@ -16,13 +16,16 @@ def create_dataloaders(csv_file):
     Returns:
     Tuple[DataLoader, DataLoader]: train_loader and val_loader.
     """
-    dataset = BiasDataset(csv_file)
+    full_dataset = BiasDataset(csv_file)
     torch.manual_seed(SEED)
 
     # Split the dataset
-    train_size = int(TRAIN_SPLIT * len(dataset))
-    val_size = len(dataset) - train_size
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    train_size = int(TRAIN_SPLIT * len(full_dataset))
+    val_size = len(full_dataset) - train_size
+    train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
+
+    train_dataset.augment = True  # Enable data augmentation for training set
+    val_dataset.augment = False  # Disable data augmentation for validation set
 
     # Create DataLoaders
     train_loader = DataLoader(
