@@ -3,7 +3,7 @@ MODEL_NAME         = "distilbert-base-uncased"
 NUM_LABELS         = 5
 
 ### Training Configuration ###
-NUM_EPOCHS         = 6
+NUM_EPOCHS         = 8
 BATCH_SIZE         = 24        # reduced to fit in GPU memory
 EVAL_BATCH_SIZE    = 32        # no-grad, can be larger
 LEARNING_RATE      = 2e-5
