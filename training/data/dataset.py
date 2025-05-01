@@ -11,7 +11,7 @@ from config import (
     PAD_TO_MAX_LENGTH, ADD_SPECIAL_TOKENS,
     AUG_PERCENTAGE
 )
-import nlpaug.augmenter.word.synonym as nas # Synonym augmentation
+import nlpaug.augmenter.word as nas # NLP Augmentation library for data augmentation
 
 """
 Since we're using a pre-trained DistilBERT model, we need to tokenize our text data in a way that DistilBERT can understand.
