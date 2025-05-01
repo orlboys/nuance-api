@@ -140,7 +140,9 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
     """
     model.train() # Set the model to training mode
     running_loss = 0.0 # Initialize the running loss to zero
-    last_loss = 0.0 # Initialize the last loss to zero        
+    last_loss = 0.0 # Initialize the last loss to zero
+    correct = 0 # Initialize the number of correct predictions to zero
+    total = 0 # Initialize the total number of predictions to zero
     optimizer.zero_grad() # Zero the gradients at the start of the epoch
 
     for i, batch in enumerate(tqdm(data_loader, desc="Training")):
@@ -162,6 +164,11 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
 
         running_loss += loss.item()
         last_loss = loss.item()
+
+        # Calculate predictions and update accuracy metrics
+        _, predicted = torch.max(outputs, 1)
+        correct += (predicted == labels).sum().item()
+        total += labels.size(0)
 
         # Gradient accumulation
         if (i + 1) % accumulation_steps == 0:
@@ -186,8 +193,9 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
         # Print the loss every 100 steps
         if (i + 1) % 100 == 0:
             print(f"Step {i + 1}/{len(data_loader)}, Loss: {last_loss:.4f}")
-        
-    return running_loss / len(data_loader) # Return the average loss for the epoch
+    
+    accuracy = correct / total # Calculate the training accuracy
+    return running_loss / len(data_loader), accuracy # Return the average loss and accuracy for the epoch
 
 def eval_model(model, data_loader, loss_fn, device):
     """
@@ -224,7 +232,7 @@ def train():
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}")
 
         # Train the model for one epoch
-        train_loss = train_epoch(model, train_loader, loss_fn, optimizer, device, scaler, USE_AMP, ACCUMULATION_STEPS)
+        train_loss, train_accuracy = train_epoch(model, train_loader, loss_fn, optimizer, device, scaler, USE_AMP, ACCUMULATION_STEPS)
 
         # Evaluate the model on the validation set
         val_loss, val_accuracy = eval_model(model, val_loader, loss_fn, device)
@@ -233,7 +241,18 @@ def train():
         writer.add_scalar("Loss/train", train_loss, epoch)
         writer.add_scalar("Loss/val", val_loss, epoch)
         writer.add_scalar("Accuracy/val", val_accuracy, epoch)
-
+        writer.add_scalar("Accuracy/train", train_accuracy, epoch)
+        # Log the learning rate to TensorBoard
+        writer.add_scalar("Learning Rate", optimizer.param_groups[0]['lr'], epoch)
+        # Log the model parameters to TensorBoard (optional, can be removed if not needed)
+        for name, param in model.named_parameters():
+            writer.add_histogram(name, param, epoch)
+            writer.add_histogram(f"{name}.grad", param.grad, epoch)
+        # Log the gradients to TensorBoard (optional, can be removed if not needed)
+        for name, param in model.named_parameters():
+            if param.grad is not None:
+                writer.add_histogram(f"{name}.grad", param.grad, epoch)
+        
         # Print the training and validation loss and accuracy (good for debugging)
         # This is useful for monitoring the training process and ensuring that the model is learning.
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
