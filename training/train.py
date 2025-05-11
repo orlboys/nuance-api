@@ -256,14 +256,13 @@ def train():
         # Log the learning rate to TensorBoard
         writer.add_scalar("Learning Rate", optimizer.param_groups[0]['lr'], epoch)
         # Log the model parameters to TensorBoard (optional, can be removed if not needed)
+        if epoch % 2 == 0: # Log model parameters every 2 epochs
         for name, param in model.named_parameters():
             writer.add_histogram(name, param, epoch)
-            writer.add_histogram(f"{name}.grad", param.grad, epoch)
-        # Log the gradients to TensorBoard (optional, can be removed if not needed)
-        for name, param in model.named_parameters():
             if param.grad is not None:
                 writer.add_histogram(f"{name}.grad", param.grad, epoch)
-        
+
+        # Print the training and validation loss and accuracy (good for debugging)
         # Print the training and validation loss and accuracy (good for debugging)
         # This is useful for monitoring the training process and ensuring that the model is learning.
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
