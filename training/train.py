@@ -118,7 +118,7 @@ Layman’s explanation:
 
 ### TensorBoard Logging ###
 
-writer = SummaryWriter(logdir=LOG_PATH) # Initialize TensorBoard writer for logging
+writer = SummaryWriter(log_dir=LOG_PATH) # Initialize TensorBoard writer for logging
 # This allows us to visualize the training process, including loss and accuracy metrics, in TensorBoard.
 
 ### Gradient Scaling ###
@@ -257,10 +257,10 @@ def train():
         writer.add_scalar("Learning Rate", optimizer.param_groups[0]['lr'], epoch)
         # Log the model parameters to TensorBoard (optional, can be removed if not needed)
         if epoch % 2 == 0: # Log model parameters every 2 epochs
-        for name, param in model.named_parameters():
-            writer.add_histogram(name, param, epoch)
-            if param.grad is not None:
-                writer.add_histogram(f"{name}.grad", param.grad, epoch)
+            for name, param in model.named_parameters():
+                writer.add_histogram(name, param, epoch)
+                if param.grad is not None:
+                    writer.add_histogram(f"{name}.grad", param.grad, epoch)
 
         # Print the training and validation loss and accuracy (good for debugging)
         # Print the training and validation loss and accuracy (good for debugging)
