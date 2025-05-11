@@ -53,7 +53,7 @@ from config import (
     LEARNING_RATE, WEIGHT_DECAY, MAX_GRAD_NORM, OPTIMIZER_EPS, 
     NUM_EPOCHS, MODEL_NAME, BATCH_SIZE, USE_CUDA, DATASET_PATH,
     USE_AMP, ACCUMULATION_STEPS, CHECKPOINTS_PATH, NICKNAME,
-    LOG_DIR
+    LOG_PATH
 )
 
 import os
@@ -69,9 +69,9 @@ if not os.path.exists(CHECKPOINTS_PATH):
     os.makedirs(CHECKPOINTS_PATH) # Create the checkpoints directory if it doesn't exist
     print(f"✅: Checkpoint path {CHECKPOINTS_PATH} created.")
 
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR) # Create the log directory if it doesn't exist
-    print(f"✅: Log path {LOG_DIR} created.")
+if not os.path.exists(LOG_PATH):
+    os.makedirs(LOG_PATH) # Create the log directory if it doesn't exist
+    print(f"✅: Log path {LOG_PATH} created.")
 
 ### GPU Configuration ###
 device = torch.device("cuda" if USE_CUDA else "cpu") # Check if CUDA is available and set the device accordingly
@@ -118,7 +118,7 @@ Layman’s explanation:
 
 ### TensorBoard Logging ###
 
-writer = SummaryWriter() # Initialize TensorBoard writer for logging
+writer = SummaryWriter(logdir=LOG_PATH) # Initialize TensorBoard writer for logging
 # This allows us to visualize the training process, including loss and accuracy metrics, in TensorBoard.
 
 ### Gradient Scaling ###
@@ -138,6 +138,10 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
     """
     Defines how the model is trained for each epoch.
     """
+    if len(data_loader) == 0:
+        print("⚠️: Data loader is empty. Skipping training for this epoch.")
+        return 0.0, 0.0  # Return default loss and accuracy values
+
     model.train() # Set the model to training mode
     running_loss = 0.0 # Initialize the running loss to zero
     last_loss = 0.0 # Initialize the last loss to zero
@@ -193,14 +197,21 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
         # Print the loss every 100 steps
         if (i + 1) % 100 == 0:
             print(f"Step {i + 1}/{len(data_loader)}, Loss: {last_loss:.4f}")
-    
-    accuracy = correct / total # Calculate the training accuracy
-    return running_loss / len(data_loader), accuracy # Return the average loss and accuracy for the epoch
+
+    return running_loss / len(data_loader), correct / total # Return the average loss and accuracy for the epoch
 
 def eval_model(model, data_loader, loss_fn, device):
     """
     Evaluates the model on the validation set.
     """
+    if len(data_loader) == 0:
+        print("⚠️: Validation data loader is empty. Skipping evaluation.")
+        return float('inf'), 0.0  # Return a high loss and zero accuracy
+
+    model.eval() # Set the model to evaluation mode
+    val_loss = 0.0
+    correct = 0 # Initialize the number of correct predictions to zero
+    total = 0 # Initialize the total number of predictions to zero
     model.eval() # Set the model to evaluation mode
     val_loss = 0.0
     correct = 0 # Initialize the number of correct predictions to zero
@@ -257,9 +268,10 @@ def train():
         # This is useful for monitoring the training process and ensuring that the model is learning.
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
 
-        # Save the model checkpoint
-        torch.save(model.state_dict(), f"{CHECKPOINTS_PATH}/{NICKNAME}_epoch_{epoch + 1}.pth")
-        print(f"Model checkpoint saved for epoch {epoch + 1}")
+        # Optionally, save checkpoints at specific intervals (e.g., every 2 epochs)
+        if (epoch + 1) % 2 == 0:
+            torch.save(model.state_dict(), f"{CHECKPOINTS_PATH}/{NICKNAME}_epoch_{epoch + 1}.pth")
+            print(f"Model checkpoint saved for epoch {epoch + 1}")
 
 if __name__ == "__main__":
     train() # Start the training process

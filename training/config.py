@@ -1,6 +1,6 @@
 ### Model Configuration ###
 MODEL_NAME         = "distilbert-base-uncased"
-NUM_LABELS         = 5
+NUM_LABELS         = 3
 
 ### Training Configuration ###
 NUM_EPOCHS         = 8
@@ -38,7 +38,7 @@ USE_AMP            = True      # enable torch.cuda.amp for FP16 (enabled here be
 
 ### Miscellaneous ###
 SEED               = 42
-DATASET_PATH       = "hf://datasets/Faith1712/Allsides_political_bias_proper/allsides_data_unstructured.zip"  # Path to the training dataset
+DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"  # Path to the training dataset
 NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_testmodel"  # Name of the model for saving/loading checkpoints
 CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"  # Path to save the model checkpoints
-LOG_DIR            = f"logs/{NICKNAME}"  # Path to save the training logs
+LOG_PATH           = f"logs/{NICKNAME}"  # Path to save the training logs
