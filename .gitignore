@@ -32,6 +32,3 @@ runs/
 
 # Ignore data analysis files
 data_analysis_scripts/
-
-# Ignore dataset files
-training/data/datasets/*.csv
