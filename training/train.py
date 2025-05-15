@@ -61,6 +61,7 @@ import os
 import sys
 
 from scikit-learn import compute_class_weight
+from scikit-learn.metrics import classification_report
 import numpy as np
 
 # Check if the script is being run from the correct directory
@@ -224,22 +225,21 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
 
     return running_loss / len(data_loader), correct / total # Return the average loss and accuracy for the epoch
 
-def eval_model(model, data_loader, loss_fn, device):
+def eval_model(model, data_loader, loss_fn, device, return_preds=False):
     """
     Evaluates the model on the validation set.
+    If return_preds is True, also returns all true and predicted labels for classification report.
     """
     if len(data_loader) == 0:
         print("⚠️: Validation data loader is empty. Skipping evaluation.")
-        return float('inf'), 0.0  # Return a high loss and zero accuracy
+        return float('inf'), 0.0 if not return_preds else (float('inf'), 0.0, [], [])
 
     model.eval() # Set the model to evaluation mode
     val_loss = 0.0
     correct = 0 # Initialize the number of correct predictions to zero
     total = 0 # Initialize the total number of predictions to zero
-    model.eval() # Set the model to evaluation mode
-    val_loss = 0.0
-    correct = 0 # Initialize the number of correct predictions to zero
-    total = 0 # Initialize the total number of predictions to zero
+    all_labels = []
+    all_preds = []
 
     with torch.no_grad(): # Disable gradient calculation for evaluation
         for batch in tqdm(data_loader, desc="Evaluating"):
@@ -258,8 +258,13 @@ def eval_model(model, data_loader, loss_fn, device):
             _, predicted = torch.max(outputs, 1)
             correct += (predicted == labels).sum().item()
             total += labels.size(0)
+
+            all_labels.extend(labels.cpu().numpy())
+            all_preds.extend(predicted.cpu().numpy())
     
     accuracy = correct / total # Calculate the accuracy
+    if return_preds:
+        return val_loss / len(data_loader), accuracy, all_labels, all_preds
     return val_loss / len(data_loader), accuracy # Return the average loss and accuracy
 
 def train():
@@ -269,8 +274,8 @@ def train():
         # Train the model for one epoch
         train_loss, train_accuracy = train_epoch(model, train_loader, loss_fn, optimizer, device, scaler, USE_AMP, ACCUMULATION_STEPS)
 
-        # Evaluate the model on the validation set
-        val_loss, val_accuracy = eval_model(model, val_loader, loss_fn, device)
+        # Evaluate the model on the validation set and get predictions
+        val_loss, val_accuracy, val_true, val_pred = eval_model(model, val_loader, loss_fn, device, return_preds=True)
 
         # Log the losses to TensorBoard
         writer.add_scalar("Loss/train", train_loss, epoch)
@@ -287,9 +292,11 @@ def train():
                     writer.add_histogram(f"{name}.grad", param.grad, epoch)
 
         # Print the training and validation loss and accuracy (good for debugging)
-        # Print the training and validation loss and accuracy (good for debugging)
-        # This is useful for monitoring the training process and ensuring that the model is learning.
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+
+        # Print classification report for validation set
+        print("\nClassification Report (Validation):")
+        print(classification_report(val_true, val_pred))
 
         # Optionally, save checkpoints at specific intervals (e.g., every 2 epochs)
         if (epoch + 1) % 2 == 0:
