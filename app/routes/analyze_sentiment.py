@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from ..services.sentiment_detector import analyze
-from ..schema import SentimentResponse, SimpleSentimentResponse
+from ..schema import SentimentRequest, SentimentResponse, SimpleSentimentResponse, SentimentRequest
 
 router = APIRouter()
 
@@ -11,7 +11,7 @@ async def analyze_text(text: str) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
-@router.post("/analyze_sentiment/full_detail", response_model=SentimentResponse)
+@router.post("/analyze_sentiment/full_detail", response_model=SentimentResponse, request_model=SentimentRequest)
 async def return_analyzed_text_detailed(text: str) -> SentimentResponse:
     # Endpoint to analyze the sentiment of a given text. GIVES FULL DETAIL - neg, neu, pos, compound
     # :param text: The text to be analyzed.
@@ -19,9 +19,14 @@ async def return_analyzed_text_detailed(text: str) -> SentimentResponse:
     # :NOTE: Check schema.py for the SentimentResponse model.
 
     # The analyze_text function is called within the route handler to perform the sentiment analysis.
-    return await analyze_text(text)
 
-@router.post("/analyze_sentiment", response_model=SimpleSentimentResponse)
+    analyzed_text = await analyze_text(text)
+    # Handle error response
+    if "error" in analyzed_text:
+        return {"result": None, "error": analyzed_text["error"]}
+    return {"sentiment": analyzed_text["result"]}
+
+@router.post("/analyze_sentiment", response_model=SimpleSentimentResponse, request_model=SentimentRequest)
 async def return_analyzed_text_simplified(text: str) -> SimpleSentimentResponse:
     # Endpoint to analyze the sentiment of a given text. GIVES ONLY +, -, or 0
     # :param text: The text to be analyzed.
