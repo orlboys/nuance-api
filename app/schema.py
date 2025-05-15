@@ -23,23 +23,3 @@ class SentimentResponse(BaseModel):
 class SimpleSentimentResponse(BaseModel):
     sentiment: bool | None = None # True for positive, False for negative, None for neutral
     error: str | None = None # Optional error message if any error occurs during analysis
-
-class SentimentRequest(BaseModel):
-    text: str # The text to be analyzed
-    error: str | None = None # Optional error message if any error occurs during analysis
-
-## Bias Analysis Schema
-
-class BiasResponse:
-    left: float # The bias score towards the left
-    right: float # The bias score towards the right
-    compound: float # The compound bias score
-    error: str | None = None # Optional error message if any error occurs during analysis
-
-class BiasResponse(BaseModel):
-    result: BiasResponse # The detected bias in the text
-    error: str | None = None # Optional error message if any error occurs during analysis
-
-class BiasRequest(BaseModel):
-    text: str # The text to be analyzed
-    error: str | None = None # Optional error message if any error occurs during analysis

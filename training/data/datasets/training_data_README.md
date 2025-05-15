@@ -10,9 +10,7 @@ Since CSV files cannot have comments, I've put the information about each of the
   - The 'label' is a number in range 0 to 4 which indicates the bias of the opinion.
     - 0 is far right, 4 is far left.
 
-### Data analysis:
-
-### Data Overview
+### Data Overview:
 
 #### Text Length Distribution
 
@@ -42,3 +40,23 @@ Since CSV files cannot have comments, I've put the information about each of the
 - SIGNIFICANTLY MORE WEIGHT must be given to labels 3, 4, and 0.
   - The class distribution shows moderate imbalance. Classes 1 and 2 are the most frequent, while Class 0 is underrepresented.
 - The maximum length of a sentence is 19 words, and the mean is 10 - it can be done by BERT but barely.
+
+## 'allsides_data_unstructured.csv'
+
+### General Info:
+
+- Sourced from https://huggingface.co/datasets/Faith1712/Allsides_political_bias_proper
+- Structure is text, label
+  - The 'text' is an opinion statement
+  - The 'label' is the bias classification of the bias
+    - 0 is left, 2 is right, 1 is centre.
+  - Based off the AllSides political bias dataset
+
+### Data Overview:
+
+#### Text Length Distribution
+
+#### Class Distribution
+
+### Analysis Outcomes:
+

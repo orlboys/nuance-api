@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader, random_split
 from .dataset import BiasDataset
 from config import (
     BATCH_SIZE, NUM_WORKERS, PIN_MEMORY,
-    SHUFFLE_DATA, SEED, TRAIN_SPLIT
+    SHUFFLE_DATA, SEED, TRAIN_SPLIT, AUGMENT
 )
 
 def create_dataloaders(csv_file):
@@ -24,7 +24,7 @@ def create_dataloaders(csv_file):
     val_size = len(full_dataset) - train_size
     train_dataset, val_dataset = random_split(full_dataset, [train_size, val_size])
 
-    train_dataset.augment = True  # Enable data augmentation for training set
+    train_dataset.augment = AUGMENT  # Enable data augmentation for training set (if desrired)
     val_dataset.augment = False  # Disable data augmentation for validation set
 
     # Create DataLoaders
