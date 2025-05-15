@@ -30,6 +30,9 @@ runs/
 *.pth
 *.ckpt
 
+# Ignore tensorboard logs
+*.0
+
 # Ignore data analysis files
 data_analysis_scripts/
 
