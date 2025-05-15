@@ -1,6 +1,6 @@
 ### Model Configuration ###
 MODEL_NAME         = "distilbert-base-uncased"
-NUM_LABELS         = 5
+NUM_LABELS         = 3
 
 ### Training Configuration ###
 NUM_EPOCHS         = 8
@@ -20,7 +20,7 @@ NUM_WORKERS        = 6         # CPU cores minus one
 PIN_MEMORY         = True      # recommended for CUDA
 SHUFFLE_DATA       = True
 TRAIN_SPLIT        = 0.8       # 80% training, 20% validation
-AUGMENT            = True      # Data augmentation (e.g. synonym replacement, back translation) - optional but increases dataset size
+AUGMENT            = False     # Data augmentation (e.g. synonym replacement, back translation) - optional but increases dataset size
 AUG_PERCENTAGE     = 0.2       # Percentage of words to augment (e.g. 0.1 = 10% of words in the text will be augmented)
 
 ### Sequence Configuration ###
@@ -38,7 +38,7 @@ USE_AMP            = True      # enable torch.cuda.amp for FP16 (enabled here be
 
 ### Miscellaneous ###
 SEED               = 42
-DATASET_PATH       = "data/datasets/political_bias.csv"  # Path to the training dataset
-NICKNAME           = f"{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_testmodel+text_augmentationV1"  # Name of the model for saving/loading checkpoints
+DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"  # Path to the training dataset
+NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_testmodel"  # Name of the model for saving/loading checkpoints
 CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"  # Path to save the model checkpoints
-LOG_DIR            = f"logs/{NICKNAME}"  # Path to save the training logs
+LOG_PATH           = f"logs/{NICKNAME}"  # Path to save the training logs
