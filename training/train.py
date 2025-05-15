@@ -45,6 +45,7 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from torch.amp import autocast, GradScaler
 
+
 # custom libraries #
 from models.bias_model import BiasModel
 from data.dataset import BiasDataset
@@ -58,6 +59,9 @@ from config import (
 
 import os
 import sys
+
+from scikit-learn import compute_class_weight
+import numpy as np
 
 # Check if the script is being run from the correct directory
 if os.getcwd() != os.path.dirname(os.path.abspath(__file__)):
@@ -84,7 +88,27 @@ train_loader, val_loader = create_dataloaders(DATASET_PATH) # Create DataLoaders
 
 model = BiasModel().to(device) # Instantiate the model with the specified model name and number of labels
 
-loss_fn = nn.CrossEntropyLoss() # Loss function for multi-class classification (CrossEntropyLoss is suitable for multi-class classification tasks)
+
+#### Compute Class Weights - fixes imbalanced datasets
+# Get the Subset object (train_loader.dataset is a Subset)
+subset = train_loader.dataset
+
+# Get the original dataset and the actual indices used for training
+full_dataset = subset.dataset
+train_indices = subset.indices
+
+# Extract the labels using the correct indices
+y_train = [full_dataset.labels[i] for i in train_indices]
+
+# Compute class weights
+classes, counts = np.unique(y_train, return_counts=True)
+n_samples = len(y_train)
+n_classes = len(classes)
+
+class_weights = {cls: n_samples / (n_classes * count) for cls, count in zip(classes, counts)}
+class_weights_tensor = torch.tensor([class_weights[cls] for cls in range(n_classes)], dtype=torch.float).to(device)
+
+loss_fn = nn.CrossEntropyLoss(weight=class_weights_tensor) # Loss function for multi-class classification (CrossEntropyLoss is suitable for multi-class classification tasks)
 
 optimizer = optim.AdamW(
     model.parameters(),
