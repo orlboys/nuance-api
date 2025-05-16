@@ -268,6 +268,11 @@ def eval_model(model, data_loader, loss_fn, device, return_preds=False):
     return val_loss / len(data_loader), accuracy # Return the average loss and accuracy
 
 def train():
+    patience = 3  # Number of epochs to wait for improvement
+    best_val_loss = float('inf')
+    epochs_no_improve = 0
+    best_model_state = None
+
     for epoch in range(NUM_EPOCHS):
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}")
 
@@ -297,6 +302,20 @@ def train():
         # Print classification report for validation set
         print("\nClassification Report (Validation):")
         print(classification_report(val_true, val_pred))
+
+        # Early stopping logic
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            epochs_no_improve = 0
+            best_model_state = model.state_dict()
+        else:
+            epochs_no_improve += 1
+            print(f"No improvement in validation loss for {epochs_no_improve} epoch(s).")
+            if epochs_no_improve >= patience:
+                print(f"Early stopping triggered after {patience} epochs with no improvement.")
+                if best_model_state is not None:
+                    model.load_state_dict(best_model_state)
+                break
 
         # Optionally, save checkpoints at specific intervals (e.g., every 2 epochs)
         if (epoch + 1) % 2 == 0:

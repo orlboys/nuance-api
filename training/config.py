@@ -1,3 +1,5 @@
+from datetime import datetime as dt
+
 ### Model Configuration ###
 MODEL_NAME         = "distilbert-base-uncased"
 NUM_LABELS         = 3
@@ -39,6 +41,6 @@ USE_AMP            = True
 ### Miscellaneous ###
 SEED               = 42
 DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"
-NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr"
+NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_{dt.now().strftime('%Y%m%d_%H%M%S')}"
 CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"
 LOG_PATH           = f"logs/{NICKNAME}"

@@ -12,28 +12,31 @@ from config import MODEL_NAME, NUM_LABELS
 
 class BiasModel(nn.Module):
     
-    def __init__(self):
+    def __init__(self, dropout_prob=0.3):
         """
         Initializes the BiasModel with a pre-trained DistilBERT model for sequence classification.
-        Can be expanded to include additional layers or modifications as needed.
+        Adds a dropout layer for regularization.
         """
         super(BiasModel, self).__init__()
-        # Load the pre-trained DistilBERT model for sequence classification
         self.model = DistilBertForSequenceClassification.from_pretrained(
             MODEL_NAME,
             num_labels=NUM_LABELS
         )
+        self.dropout = nn.Dropout(dropout_prob)
     
     def forward(self, input_ids, attention_mask):
         """
-        Forward pass through the model.
+        Forward pass through the model with dropout regularization.
         Args:
             input_ids (torch.Tensor): Input IDs for the DistilBERT model.
             attention_mask (torch.Tensor): Attention mask for the DistilBERT model.
         Returns:
             torch.Tensor: Output logits from the model.
         """
-        outputs = self.model(input_ids=input_ids, attention_mask=attention_mask)
-        return outputs.logits # Output logits for classification - these are the raw scores for each class.
+        outputs = self.model.distilbert(input_ids=input_ids, attention_mask=attention_mask)
+        pooled_output = outputs[0][:,0]  # CLS token
+        dropped = self.dropout(pooled_output)
+        logits = self.model.classifier(dropped)
+        return logits # Output logits for classification - these are the raw scores for each class.
         # e.g. nn.CrossEntropyLoss() expects raw logits as input, not probabilities, to compute the loss.
         # e.g. using a softmax to convert logits to probabilites.
