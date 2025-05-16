@@ -60,8 +60,8 @@ from config import (
 import os
 import sys
 
-from scikit-learn import compute_class_weight
-from scikit-learn.metrics import classification_report
+from sklearn.utils.class_weight import compute_class_weight
+from sklearn.metrics import classification_report
 import numpy as np
 
 # Check if the script is being run from the correct directory

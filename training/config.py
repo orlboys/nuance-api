@@ -3,23 +3,23 @@ MODEL_NAME         = "distilbert-base-uncased"
 NUM_LABELS         = 3
 
 ### Training Configuration ###
-NUM_EPOCHS         = 15
-BATCH_SIZE         = 64        # increase if GPU allows
-EVAL_BATCH_SIZE    = 64
+NUM_EPOCHS         = 8              # Fewer epochs may suffice for 14k rows
+BATCH_SIZE         = 32             # Reduce if running into memory issues
+EVAL_BATCH_SIZE    = 32
 LEARNING_RATE      = 2e-5
 WEIGHT_DECAY       = 1e-2
-WARMUP_STEPS       = 1000      # ~5% of 20,000 steps
+WARMUP_STEPS       = 500            # Lower, since total steps will be fewer
 MAX_GRAD_NORM      = 1.0
-ACCUMULATION_STEPS = 2
+ACCUMULATION_STEPS = 1              # Set to 1 unless you need gradient accumulation
 
 ### Optimizer (AdamW) ###
 OPTIMIZER_EPS      = 1e-8
 
 ### DataLoader Configuration ###
-NUM_WORKERS        = 6
+NUM_WORKERS        = 6              # Fewer workers may be sufficient
 PIN_MEMORY         = True
 SHUFFLE_DATA       = True
-TRAIN_SPLIT        = 0.8       # 80% training, 20% validation
+TRAIN_SPLIT        = 0.8
 AUGMENT            = False
 AUG_PERCENTAGE     = 0.2
 
@@ -38,7 +38,7 @@ USE_AMP            = True
 
 ### Miscellaneous ###
 SEED               = 42
-DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"  # Update to your new dataset path
-NICKNAME           = f"newdataset20k_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_testmodel"
+DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"
+NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr"
 CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"
 LOG_PATH           = f"logs/{NICKNAME}"
