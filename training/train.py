@@ -63,6 +63,7 @@ import sys
 from sklearn.utils.class_weight import compute_class_weight
 from sklearn.metrics import classification_report
 import numpy as np
+import datetime as dt
 
 # Check if the script is being run from the correct directory
 if os.getcwd() != os.path.dirname(os.path.abspath(__file__)):
@@ -143,7 +144,8 @@ Layman’s explanation:
 
 ### TensorBoard Logging ###
 
-writer = SummaryWriter(log_dir=LOG_PATH) # Initialize TensorBoard writer for logging
+epoch_start_time = dt.datetime.now().strftime("%Y%m%d_%H%M%S") # Get the current time for logging purposes
+writer = SummaryWriter(log_dir=f"{LOG_PATH}/run_{epoch_start_time}") # Initialize TensorBoard writer for logging
 # This allows us to visualize the training process, including loss and accuracy metrics, in TensorBoard.
 
 ### Gradient Scaling ###

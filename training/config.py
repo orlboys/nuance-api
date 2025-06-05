@@ -10,7 +10,7 @@ BATCH_SIZE         = 32             # Reduce if running into memory issues
 EVAL_BATCH_SIZE    = 32
 LEARNING_RATE      = 2e-5
 WEIGHT_DECAY       = 1e-2
-WARMUP_STEPS       = 500            # Lower, since total steps will be fewer
+WARMUP_STEPS       = 200            # Lower, since total steps will be fewer
 MAX_GRAD_NORM      = 1.0
 ACCUMULATION_STEPS = 1              # Set to 1 unless you need gradient accumulation
 
@@ -26,7 +26,7 @@ AUGMENT            = False
 AUG_PERCENTAGE     = 0.2
 
 ### Sequence Configuration ###
-MAX_SEQ_LENGTH     = 128
+MAX_SEQ_LENGTH     = 254 # Maximum length for DistilBERT
 TRUNCATION         = True
 PAD_TO_MAX_LENGTH  = True
 ADD_SPECIAL_TOKENS = True
@@ -41,6 +41,6 @@ USE_AMP            = True
 ### Miscellaneous ###
 SEED               = 42
 DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"
-NICKNAME           = f"newdataset_{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_{dt.now().strftime('%Y%m%d_%H%M%S')}"
+NICKNAME           = f"{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_{MAX_SEQ_LENGTH}_seqlen"
 CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"
 LOG_PATH           = f"logs/{NICKNAME}"
