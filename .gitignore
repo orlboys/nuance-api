@@ -38,3 +38,6 @@ data_analysis_scripts/
 
 # Ignore dataset files
 training/data/datasets/*.csv
+
+# Ignore .idea directory
+.idea
