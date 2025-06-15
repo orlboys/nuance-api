@@ -80,19 +80,26 @@ if not os.path.exists(LOG_PATH):
     print(f"✅: Log path {LOG_PATH} created.")
 
 ### GPU Configuration ###
-device = torch.device("cuda" if USE_CUDA else "cpu") # Check if CUDA is available and set the device accordingly
+device = torch.device("cuda") # Check if CUDA is available and set the device accordingly
 
 ### Data Loading ###
 
-train_loader, val_loader = create_dataloaders(DATASET_PATH) # Create DataLoaders for training and validation datasets
+print(f"\n🔍 Loading data from: {DATASET_PATH}")
+train_loader, val_loader = create_dataloaders(DATASET_PATH)
+print(f"✅ Data loaded successfully:")
+print(f"   - Training batches: {len(train_loader)}")
+print(f"   - Validation batches: {len(val_loader)}")
 
 ### Model, Loss, Optimizer ###
 
-model = BiasModel().to(device) # Instantiate the model with the specified model name and number of labels
+print(f"\n🤖 Initializing model on device: {device}")
+model = BiasModel().to(device)
+print(f"✅ Model architecture:")
+print(model)
 
-
-#### Compute Class Weights - fixes imbalanced datasets
-# Get the Subset object (train_loader.dataset is a Subset)
+#### Compute Class Weights
+print("\n⚖️ Computing class weights for imbalanced dataset...")
+# Get the Subset object
 subset = train_loader.dataset
 
 # Get the original dataset and the actual indices used for training
@@ -108,6 +115,10 @@ n_samples = len(y_train)
 n_classes = len(classes)
 
 class_weights = {cls: n_samples / (n_classes * count) for cls, count in zip(classes, counts)}
+print("📊 Class distribution:")
+for cls, count in zip(classes, counts):
+    print(f"   Class {cls}: {count} samples, weight: {class_weights[cls]:.4f}")
+
 class_weights_tensor = torch.tensor([class_weights[cls] for cls in range(n_classes)], dtype=torch.float).to(device)
 
 loss_fn = nn.CrossEntropyLoss(weight=class_weights_tensor) # Loss function for multi-class classification (CrossEntropyLoss is suitable for multi-class classification tasks)
@@ -167,14 +178,11 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
     """
     if len(data_loader) == 0:
         print("⚠️: Data loader is empty. Skipping training for this epoch.")
-        return 0.0, 0.0  # Return default loss and accuracy values
-
-    model.train() # Set the model to training mode
+        return 0.0, 0.0  # Return default loss and accuracy values    model.train() # Set the model to training mode
     running_loss = 0.0 # Initialize the running loss to zero
     last_loss = 0.0 # Initialize the last loss to zero
     correct = 0 # Initialize the number of correct predictions to zero
     total = 0 # Initialize the total number of predictions to zero
-    optimizer.zero_grad() # Zero the gradients at the start of the epoch
 
     for i, batch in enumerate(tqdm(data_loader, desc="Training")):
         # Move the batch to the specified device (GPU or CPU)
@@ -210,20 +218,22 @@ def train_epoch(model, data_loader, loss_fn, optimizer, device, scaler, use_amp,
                     scaler.unscale_(optimizer)
                     nn.utils.clip_grad_norm_(model.parameters(), MAX_GRAD_NORM)
                 else:
-                    nn.utils.clip_grad_norm_(model.parameters(), MAX_GRAD_NORM)
-
-            # Update the model parameters / weights (see explanation of CrossEntropyLoss above)
+                    nn.utils.clip_grad_norm_(model.parameters(), MAX_GRAD_NORM)            # Update the model parameters / weights (see explanation of CrossEntropyLoss above)
             if use_amp:
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 optimizer.step()
+                
+            optimizer.zero_grad() # Zero the gradients before the next batch
 
-            optimizer.zero_grad() # Zero the gradients after updating the model parameters
-
-        # Print the loss every 100 steps
+        # Debug batch information every 100 steps
         if (i + 1) % 100 == 0:
-            print(f"Step {i + 1}/{len(data_loader)}, Loss: {last_loss:.4f}")
+            print(f"\n📦 Batch {i + 1} stats:")
+            print(f"   - Input shape: {input_ids.shape}")
+            print(f"   - Current loss: {last_loss:.4f}")
+            print(f"   - Accuracy so far: {(correct/total)*100:.2f}%")
+            print(f"   - Memory used: {torch.cuda.memory_allocated()/1024**2:.1f}MB") if USE_CUDA else None
 
     return running_loss / len(data_loader), correct / total # Return the average loss and accuracy for the epoch
 
@@ -270,13 +280,22 @@ def eval_model(model, data_loader, loss_fn, device, return_preds=False):
     return val_loss / len(data_loader), accuracy # Return the average loss and accuracy
 
 def train():
+    print("\n🚀 Starting training process...")
+    print(f"   - Epochs: {NUM_EPOCHS}")
+    print(f"   - Learning rate: {LEARNING_RATE}")
+    print(f"   - Batch size: {BATCH_SIZE}")
+    print(f"   - Device: {device}")
+    print(f"   - AMP enabled: {USE_AMP}")
+    
     patience = 3  # Number of epochs to wait for improvement
     best_val_loss = float('inf')
     epochs_no_improve = 0
     best_model_state = None
 
     for epoch in range(NUM_EPOCHS):
-        print(f"Epoch {epoch + 1}/{NUM_EPOCHS}")
+        print(f"\n{'='*50}")
+        print(f"⭐ Epoch {epoch + 1}/{NUM_EPOCHS}")
+        print(f"{'='*50}")
 
         # Train the model for one epoch
         train_loss, train_accuracy = train_epoch(model, train_loader, loss_fn, optimizer, device, scaler, USE_AMP, ACCUMULATION_STEPS)
@@ -301,6 +320,16 @@ def train():
         # Print the training and validation loss and accuracy (good for debugging)
         print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
 
+        # Enhanced progress reporting
+        print(f"\n📊 Epoch {epoch + 1} Summary:")
+        print(f"   - Training Loss: {train_loss:.4f}")
+        print(f"   - Validation Loss: {val_loss:.4f}")
+        print(f"   - Training Accuracy: {train_accuracy*100:.2f}%")
+        print(f"   - Validation Accuracy: {val_accuracy*100:.2f}%")
+        if USE_CUDA:
+            print(f"   - GPU Memory: {torch.cuda.memory_allocated()/1024**2:.1f}MB")
+            print(f"   - GPU Utilization: {torch.cuda.utilization()}%")
+
         # Print classification report for validation set
         print("\nClassification Report (Validation):")
         print(classification_report(val_true, val_pred))
@@ -321,18 +350,25 @@ def train():
 
         # Optionally, save checkpoints at specific intervals (e.g., every 2 epochs)
         if (epoch + 1) % 2 == 0:
-            torch.save(model.state_dict(), f"{CHECKPOINTS_PATH}/{NICKNAME}_epoch_{epoch + 1}.pth")
+            checkpoint_path = f"{CHECKPOINTS_PATH}/{NICKNAME}_epoch_{epoch + 1}.pth"
+            torch.save({
+                'epoch': epoch + 1,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+                'train_loss': train_loss,
+                'val_loss': val_loss,
+                'val_accuracy': val_accuracy,
+                }, checkpoint_path)
             print(f"Model checkpoint saved for epoch {epoch + 1}")
 
 if __name__ == "__main__":
-    train() # Start the training process
-    writer.close() # Close the TensorBoard writer after training is complete
-    print("Training complete!")
-    # This ensures that all resources are released and the logs are saved properly.
-    # It’s a good practice to close the writer to avoid any potential memory leaks or file corruption.
-    print("TensorBoard logs saved!")
-    print("Model checkpoints saved at training/checkpoints/")
-    print("Model training complete! Good job!!!")
+    print("\n🔧 Initializing training environment...")
+    train()
+    writer.close()
+    print("\n✅ Training complete!")
+    print("📊 TensorBoard logs saved!")
+    print(f"💾 Model checkpoints saved at: {CHECKPOINTS_PATH}")
+    print("\n🎉 Training process finished successfully! Good job!!!")
 
 """
 ### Summary ###

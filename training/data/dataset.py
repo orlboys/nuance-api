@@ -44,7 +44,7 @@ class BiasDataset(Dataset):
         Args:
             csv_file (str): Path to the CSV file containing the dataset.
         """
-        self.data = pd.read_csv(csv_file)
+        self.data = pd.read_csv("hf://datasets/Faith1712/Allsides_political_bias_proper/allsides_data_unstructured.zip")
         self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
         self.texts = self.data['text'].tolist() # List of texts
         self.labels = self.data['label'].tolist() # List of labels
@@ -104,4 +104,4 @@ class BiasDataset(Dataset):
         """
 
     def augment_data(self, text):
-        return self.aug.augment(text) # Synonym augmentation with 10% probability
+        return self.augmenter.augment(text) # Synonym augmentation with 10% probability

@@ -6,13 +6,13 @@ NUM_LABELS         = 3
 
 ### Training Configuration ###
 NUM_EPOCHS         = 8              # Fewer epochs may suffice for 14k rows
-BATCH_SIZE         = 32             # Reduce if running into memory issues
-EVAL_BATCH_SIZE    = 32
+BATCH_SIZE         = 16             # Reduce if running into memory issues
+EVAL_BATCH_SIZE    = 16
 LEARNING_RATE      = 2e-5
 WEIGHT_DECAY       = 1e-2
 WARMUP_STEPS       = 200            # Lower, since total steps will be fewer
 MAX_GRAD_NORM      = 1.0
-ACCUMULATION_STEPS = 1              # Set to 1 unless you need gradient accumulation
+ACCUMULATION_STEPS = 5              # Set to 1 unless you need gradient accumulation
 
 ### Optimizer (AdamW) ###
 OPTIMIZER_EPS      = 1e-8
