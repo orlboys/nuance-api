@@ -3,9 +3,10 @@ import pandas as pd
 from torch.utils.data import DataLoader
 from data.dataset import BiasDataset
 from models.bias_model import BiasModel
+from sklearn.metrics import classification_report
 
 # Replace with your actual model and dataset paths
-MODEL_PATH = "./trained_models/8_epochs_2e-05_lr_512_seqlen/checkpoint/8_epochs_2e-05_lr_512_seqlen_epoch_4.pth"
+MODEL_PATH = "./trained_models/8_epochs_2e-05_lr_254_seqlen/checkpoint/8_epochs_2e-05_lr_254_seqlen_epoch_4.pth"
 TEST_DATA_PATH = "./data/datasets/test_data.csv"
 
 def test_model():
@@ -22,8 +23,9 @@ def test_model():
     )
     
     # Load the trained model
+    checkpoint = torch.load(MODEL_PATH, map_location='cpu')
     model = BiasModel()
-    model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))  # Load model state dict
+    model.load_state_dict(checkpoint['model_state_dict'])  # Load only the model state dict
     # Ensure the model is in evaluation mode
     model.eval()
     
@@ -68,6 +70,8 @@ def test_model():
     print(f"\nSample predictions (first 10):")
     for i in range(min(10, len(all_predictions))):
         print(f"Predicted: {all_predictions[i]}, Actual: {all_labels[i]}")
+
+    print(classification_report(all_labels, all_predictions))
 
 if __name__ == "__main__":
     test_model()

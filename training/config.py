@@ -1,4 +1,5 @@
 from datetime import datetime as dt
+import os
 
 ### Model Configuration ###
 MODEL_NAME         = "distilbert-base-uncased"
@@ -42,5 +43,5 @@ USE_AMP            = True
 SEED               = 42
 DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"
 NICKNAME           = f"{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_{MAX_SEQ_LENGTH}_seqlen"
-CHECKPOINTS_PATH   = f"trained_models/{NICKNAME}/checkpoint"
-LOG_PATH           = f"logs/{NICKNAME}"
+CHECKPOINTS_PATH   = os.path.join("trained_models", NICKNAME, "checkpoint")
+LOG_PATH           = os.path.join("logs", NICKNAME, dt.now().strftime("%Y-%m-%d_%H-%M-%S"))
