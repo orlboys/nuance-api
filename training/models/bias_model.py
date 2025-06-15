@@ -12,7 +12,7 @@ from config import MODEL_NAME, NUM_LABELS
 
 class BiasModel(nn.Module):
     
-    def __init__(self, dropout_prob=0.3):
+    def __init__(self, dropout_prob=0.5):
         """
         Initializes the BiasModel with a pre-trained DistilBERT model for sequence classification.
         Adds a dropout layer for regularization.

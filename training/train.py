@@ -131,6 +131,16 @@ def main():
         weight_decay=WEIGHT_DECAY
     )
 
+    # Add ReduceLROnPlateau scheduler
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer,
+        mode='min',
+        factor=0.5,  # Reduce LR by half
+        patience=1,  # Wait 1 epoch of no improvement
+        verbose=True,
+        min_lr=1e-7
+    )
+
     """
     CrossEntropyLoss combines LogSoftmax and NLLLoss into a single class.
 
@@ -346,6 +356,10 @@ def main():
 
             # Print the training and validation loss and accuracy (good for debugging)
             print(f"Epoch {epoch + 1}/{NUM_EPOCHS}, Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}, Val Accuracy: {val_accuracy:.4f}")
+
+            # Step the scheduler with the validation loss
+            scheduler.step(val_loss)
+            print(f"Current learning rate: {optimizer.param_groups[0]['lr']}")
 
             # Enhanced progress reporting
             print(f"\n📊 Epoch {epoch + 1} Summary:")
