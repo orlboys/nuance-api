@@ -38,6 +38,7 @@ def test_model():
     all_labels = []
     
     print("Running inference...")
+    debug_print_count = 0  # Only print for the first few batches
     with torch.no_grad():
         for batch in test_loader:
             # Move batch to device
@@ -61,6 +62,18 @@ def test_model():
             
             all_predictions.extend(predicted.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
+
+            # Debug print for the first 2 batches
+            if debug_print_count < 2:
+                for i in range(input_ids.shape[0]):
+                    print(f"\nSample {debug_print_count * input_ids.shape[0] + i}:")
+                    print("Text:", test_dataset.texts[debug_print_count * input_ids.shape[0] + i])
+                    print("Tokenized input_ids:", input_ids[i].cpu().numpy())
+                    print("Logits:", logits[i].cpu().numpy())
+                    probs = torch.softmax(logits[i], dim=0).cpu().numpy()
+                    print("Probabilities:", probs)
+                    print("Predicted class:", predicted[i].item(), "Actual label:", labels[i].item())
+                debug_print_count += 1
     
     # Calculate accuracy
     accuracy = sum(p == l for p, l in zip(all_predictions, all_labels)) / len(all_labels)

@@ -14,6 +14,10 @@ class SentimentScores(BaseModel):
     compound: float
     error: str | None = None # Optional error message if any error occurs during analysis
 
+class SentimentRequest(BaseModel):
+    text: str # The text to be analyzed for sentiment
+    error: str | None = None # Optional error message if any error occurs during analysis
+
 ### Sentiment Response Schema (How the response will look like)
 class SentimentResponse(BaseModel):
     result: SentimentScores # The result of the sentiment analysis - an instance of SentimentScores
@@ -29,8 +33,9 @@ class SimpleSentimentResponse(BaseModel):
 ### Bias Scores Schema
 class BiasScores(BaseModel):
     left: float # The score indicating left-leaning bias
+    neutral: float # The score indicating neutral bias
     right: float # The score indicating right-leaning bias
-    compound: float # The overall bias score, combining left and right scores
+    prediction: int # The predicted bias category (e.g., "left", "neutral", "right")
     error: str | None = None # Optional error message if any error occurs during analysis
 
 ### Bias Request Schema

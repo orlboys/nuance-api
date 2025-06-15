@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModel
+from transformers import DistilBertTokenizer, DistilBertForSequenceClassification as Dis
+from training.config import (
+    MODEL_NAME, MAX_SEQ_LENGTH, TRUNCATION,
+    PAD_TO_MAX_LENGTH, ADD_SPECIAL_TOKENS
+)
 
 # ---------------- Defining the Model Architecture ----------------
 # This file defines the model architecture and instantiates the model for training.
@@ -11,20 +15,24 @@ from transformers import AutoTokenizer, AutoModel
 # redefinition of the BiasModel class
 
 class BiasModel(nn.Module):
+    
     def __init__(self, dropout_prob=0.3):
         """
         Initializes the BiasModel with a pre-trained DistilBERT model for sequence classification.
+        Adds a dropout layer for regularization.
         """
         super(BiasModel, self).__init__()
-        self.model = DistilBertForSequenceClassification.from_pretrained(
-            MODEL_NAME,
-            num_labels=NUM_LABELS
-        )
+        self.model = Dis.from_pretrained(MODEL_NAME, num_labels=3)
         self.dropout = nn.Dropout(dropout_prob)
     
     def forward(self, input_ids, attention_mask):
         """
-        Defines how the model should pass the input through the network.
+        Forward pass through the model with dropout regularization.
+        Args:
+            input_ids (torch.Tensor): Input IDs for the DistilBERT model.
+            attention_mask (torch.Tensor): Attention mask for the DistilBERT model.
+        Returns:
+            torch.Tensor: Output logits from the model.
         """
         outputs = self.model.distilbert(input_ids=input_ids, attention_mask=attention_mask)
         pooled_output = outputs[0][:,0]  # CLS token
@@ -32,39 +40,62 @@ class BiasModel(nn.Module):
         logits = self.model.classifier(dropped)
         return logits
 
-# ---------------- loading Tokenizer ----------------
-tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased") # change the model name if needed
+# ---------------- Device Setup ----------------
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# ---------------- loading Model ----------------
+# ---------------- Tokenizer and Model Loading ----------------
+tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
 model = BiasModel()
-model.load_state_dict(torch.load(".././models/model_15_06_25.pth", map_location=torch.device('cpu')))
-model.eval()  # Set the model to evaluation mode
+checkpoint = torch.load("models/model_15_06_25.pth", map_location=device)
+model.load_state_dict(checkpoint['model_state_dict'])
+model.eval()
+model.to(device)
 
 # ---------------- Function to Analyze Bias ----------------
-async def analyze(text: str) -> dict:
+async def predict_bias(text: str) -> dict:
     """
     Analyzes the bias of a given text using the pre-trained BiasModel.
     :param text: The text to be analyzed.
     :return: A dictionary containing the bias prediction and probabilities.
     """
-    tokens = tokenizer(
+    encoded_text = tokenizer.encode_plus(
         text,
-        return_tensors="pt",
-        padding="max_length",
-        truncation=True,
-        max_length=128
+        add_special_tokens=ADD_SPECIAL_TOKENS,
+        max_length=MAX_SEQ_LENGTH,
+        padding='max_length' if PAD_TO_MAX_LENGTH else 'do_not_pad',
+        truncation=TRUNCATION,
+        return_tensors='pt',
+        return_attention_mask=True,
     )
-    
-    with torch.no_grad():
-        logits = model(tokens['input_ids'], tokens['attention_mask'])
-        probs = torch.softmax(logits, dim=1).squeeze()
-        prediction = torch.argmax(probs).item()
+    input_ids = encoded_text['input_ids'].to(device)
+    attention_mask = encoded_text['attention_mask'].to(device)
 
+    with torch.no_grad():
+        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+        # Handle different output formats as in test.py
+        if hasattr(outputs, 'logits'):
+            logits = outputs.logits
+        elif isinstance(outputs, tuple):
+            logits = outputs[0]
+        else:
+            logits = outputs
+        # Get prediction (single sample)
+        _, predicted = torch.max(logits, 1)
+        probs = torch.softmax(logits, dim=1).squeeze()
+        prediction = predicted.item()
+
+    # Debug print for comparison with test.py
+    print("\n[API Debug] Text:", text)
+    print("[API Debug] Tokenized input_ids:", input_ids.cpu().numpy())
+    print("[API Debug] Logits:", logits.cpu().numpy())
+    print("[API Debug] Probabilities:", probs.cpu().numpy())
+    print("[API Debug] Predicted class:", prediction)
+
+    # Assuming label order: 0=left, 1=neutral, 2=right
     return {
+        "left": probs[0].item(),
+        "neutral": probs[1].item(),
+        "right": probs[2].item(),
         "prediction": prediction,
-        "probabilities": {
-            "left": probs[0].item(),
-            "right": probs[1].item(),
-            "compound": probs[2].item()
-        }
+        "error": None
     }
