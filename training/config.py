@@ -10,7 +10,7 @@ NUM_EPOCHS         = 8              # Fewer epochs may suffice for 14k rows
 BATCH_SIZE         = 16             # Reduce if running into memory issues
 EVAL_BATCH_SIZE    = 16
 LEARNING_RATE      = 2e-5
-WEIGHT_DECAY       = 0.01           # Lower weight decay for smaller dataset
+WEIGHT_DECAY       = 0.05           # Increase weight decay for stronger regularization
 WARMUP_STEPS       = 200            # Lower, since total steps will be fewer
 MAX_GRAD_NORM      = 1.0
 ACCUMULATION_STEPS = 5              # Set to 1 unless you need gradient accumulation
@@ -23,8 +23,8 @@ NUM_WORKERS        = 6              # Fewer workers may be sufficient
 PIN_MEMORY         = True
 SHUFFLE_DATA       = True
 TRAIN_SPLIT        = 0.8
-AUGMENT            = False
-AUG_PERCENTAGE     = 0.2
+AUGMENT            = True           # Enable data augmentation
+AUG_PERCENTAGE     = 0.3            # Increase augmentation percentage
 
 ### Sequence Configuration ###
 MAX_SEQ_LENGTH     = 254 # Maximum length for DistilBERT

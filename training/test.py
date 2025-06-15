@@ -6,7 +6,7 @@ from models.bias_model import BiasModel
 from sklearn.metrics import classification_report
 
 # Replace with your actual model and dataset paths
-MODEL_PATH = "./trained_models/8_epochs_2e-05_lr_254_seqlen/checkpoint/8_epochs_2e-05_lr_254_seqlen_epoch_4.pth"
+MODEL_PATH = "./trained_models/8_epochs_2e-05_lr_254_seqlen/checkpoint/8_epochs_2e-05_lr_254_seqlen_epoch_2.pth"
 TEST_DATA_PATH = "./data/datasets/test_data.csv"
 
 def test_model():

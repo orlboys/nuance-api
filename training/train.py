@@ -73,7 +73,7 @@ def main():
         sys.exit(1)
 
     if not os.path.exists(CHECKPOINTS_PATH):
-        os.makedirs(CHECKPOINTS_PATH) # Create the checkpoints directory if it doesn't exist
+        os.makedirs(CHECKPOINTS_PATH + '_' + dt.now().strftime("%Y-%m-%d_%H-%M-%S")) # Create the checkpoints directory if it doesn't exist
         print(f"✅: Checkpoint path {CHECKPOINTS_PATH} created.")
 
     if not os.path.exists(LOG_PATH):
@@ -137,7 +137,6 @@ def main():
         mode='min',
         factor=0.5,  # Reduce LR by half
         patience=1,  # Wait 1 epoch of no improvement
-        verbose=True,
         min_lr=1e-7
     )
 
@@ -324,7 +323,7 @@ def main():
         print(f"   - Device: {device}")
         print(f"   - AMP enabled: {USE_AMP}")
         
-        patience = 3  # Number of epochs to wait for improvement
+        patience = 2  # Lower patience for early stopping
         best_val_loss = float('inf')
         epochs_no_improve = 0
         best_model_state = None

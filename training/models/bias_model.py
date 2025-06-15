@@ -11,8 +11,7 @@ from config import MODEL_NAME, NUM_LABELS
 # This allows us to create a custom model that can be trained and evaluated using PyTorch.
 
 class BiasModel(nn.Module):
-    
-    def __init__(self, dropout_prob=0.5):
+    def __init__(self, dropout_prob=0.5):  # Increase dropout
         """
         Initializes the BiasModel with a pre-trained DistilBERT model for sequence classification.
         Adds a dropout layer for regularization.
