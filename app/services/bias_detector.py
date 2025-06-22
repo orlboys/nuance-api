@@ -58,44 +58,60 @@ async def predict_bias(text: str) -> dict:
     :param text: The text to be analyzed.
     :return: A dictionary containing the bias prediction and probabilities.
     """
-    encoded_text = tokenizer.encode_plus(
-        text,
-        add_special_tokens=ADD_SPECIAL_TOKENS,
-        max_length=MAX_SEQ_LENGTH,
-        padding='max_length' if PAD_TO_MAX_LENGTH else 'do_not_pad',
-        truncation=TRUNCATION,
-        return_tensors='pt',
-        return_attention_mask=True,
-    )
-    input_ids = encoded_text['input_ids'].to(device)
-    attention_mask = encoded_text['attention_mask'].to(device)
+    try:
+        encoded_text = tokenizer.encode_plus(
+            text,
+            add_special_tokens=ADD_SPECIAL_TOKENS,
+            max_length=MAX_SEQ_LENGTH,
+            padding='max_length' if PAD_TO_MAX_LENGTH else 'do_not_pad',
+            truncation=TRUNCATION,
+            return_tensors='pt',
+            return_attention_mask=True,
+        )
+        input_ids = encoded_text['input_ids'].to(device)
+        attention_mask = encoded_text['attention_mask'].to(device)
 
-    with torch.no_grad():
-        outputs = model(input_ids=input_ids, attention_mask=attention_mask)
-        # Handle different output formats as in test.py
-        if hasattr(outputs, 'logits'):
-            logits = outputs.logits
-        elif isinstance(outputs, tuple):
-            logits = outputs[0]
-        else:
-            logits = outputs
-        # Get prediction (single sample)
-        _, predicted = torch.max(logits, 1)
-        probs = torch.softmax(logits, dim=1).squeeze()
-        prediction = predicted.item()
+        with torch.no_grad():
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask)
+            # Handle different output formats as in test.py
+            if hasattr(outputs, 'logits'):
+                logits = outputs.logits
+            elif isinstance(outputs, tuple):
+                logits = outputs[0]
+            else:
+                logits = outputs
+            # Get prediction (single sample)
+            _, predicted = torch.max(logits, 1)
+            probs = torch.softmax(logits, dim=1).squeeze()
+            prediction = predicted.item()
 
-    # Debug print for comparison with test.py
-    print("\n[API Debug] Text:", text)
-    print("[API Debug] Tokenized input_ids:", input_ids.cpu().numpy())
-    print("[API Debug] Logits:", logits.cpu().numpy())
-    print("[API Debug] Probabilities:", probs.cpu().numpy())
-    print("[API Debug] Predicted class:", prediction)
+        # Debug print for comparison with test.py
+        print("\n[API Debug] Text:", text)
+        print("[API Debug] Tokenized input_ids:", input_ids.cpu().numpy())
+        print("[API Debug] Logits:", logits.cpu().numpy())
+        print("[API Debug] Probabilities:", probs.cpu().numpy())
+        print("[API Debug] Predicted class:", prediction)
 
-    # Assuming label order: 0=left, 1=neutral, 2=right
-    return {
-        "left": probs[0].item(),
-        "neutral": probs[1].item(),
-        "right": probs[2].item(),
-        "prediction": prediction,
-        "error": None
-    }
+
+        # Assuming label order: 0=left, 1=neutral, 2=right
+        return {
+            "left": probs[0].item(),
+            "neutral": probs[1].item(),
+            "right": probs[2].item(),
+            # Compound score is a simple linear combination of the probabilities
+            "compound": (-1) * probs[0].item() + 0 * probs[1].item() + 1 * probs[2].item(), # Compound Score - used for the 'gauge' in the UI
+            "confidence": float(torch.max(probs).item()), # Returns the highest confidence a model has in its chosen class.
+            "prediction": prediction,
+            "error": None
+        }
+    except Exception as e:
+        print(f"[API Error] An error occurred while analyzing bias: {str(e)}")
+        return {
+            "left": 0.0,
+            "neutral": 0.0,
+            "right": 0.0,
+            "compound": 0.0,
+            "prediction": -1,  # Indicating an error
+            "confidence": 0.0,
+            "error": str(e)
+        }

@@ -35,6 +35,8 @@ class BiasScores(BaseModel):
     left: float # The score indicating left-leaning bias
     neutral: float # The score indicating neutral bias
     right: float # The score indicating right-leaning bias
+    compound: float # Compound score for overall bias
+    confidence: float
     prediction: int # The predicted bias category (e.g., "left", "neutral", "right")
     error: str | None = None # Optional error message if any error occurs during analysis
 

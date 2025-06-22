@@ -44,7 +44,7 @@ class BiasDataset(Dataset):
         Args:
             csv_file (str): Path to the CSV file containing the dataset.
         """
-        self.data = pd.read_csv("./data/datasets/test_data.csv") # Load the dataset from the CSV file
+        self.data = pd.read_csv("./data/datasets/test_data.csv") # <-- LOOK HERE IM READING FROM A FILE!!! 
         self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
         self.texts = self.data['text'].tolist() # List of texts
         self.labels = self.data['label'].tolist() # List of labels
