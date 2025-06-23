@@ -39,6 +39,7 @@ Since CSV files cannot have comments, I've put the information about each of the
 
 - SIGNIFICANTLY MORE WEIGHT must be given to labels 3, 4, and 0.
   - The class distribution shows moderate imbalance. Classes 1 and 2 are the most frequent, while Class 0 is underrepresented.
+  - Luckily, this is ok because we have weight balancing!
 - The maximum length of a sentence is 19 words, and the mean is 10 - it can be done by BERT but barely.
 
 ## 'allsides_data_unstructured.csv'
@@ -52,11 +53,15 @@ Since CSV files cannot have comments, I've put the information about each of the
     - 0 is left, 2 is right, 1 is centre.
   - Based off the AllSides political bias dataset
 
-### Data Overview:
+## ./jsons
 
-#### Text Length Distribution
+### General Info
 
-#### Class Distribution
-
-### Analysis Outcomes:
-
+- New approach - lets use JSONS!!
+- 37554 different entries, with more data than before on sources and texts.
+- more structured data reading, since everything is now in jsonified form (is it obvious I love jsons yet)
+- Sourced from https://github.com/ramybaly/Article-Bias-Prediction
+- Structure is "topic", "source", "bias", "url", "title", "date", "authors", "content", "content_original", "source_url", "bias_text", "bias"
+  - For now, just using "content" and "bias"
+  - Bias is 0 - 2 scale (left to right).
+  - Crawled from https://www.allsides.com/unbiased-balanced-news
