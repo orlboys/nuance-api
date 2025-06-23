@@ -6,12 +6,12 @@ MODEL_NAME         = "distilbert-base-uncased"
 NUM_LABELS         = 3
 
 ### Training Configuration ###
-NUM_EPOCHS         = 8              # Fewer epochs may suffice for 14k rows
+NUM_EPOCHS         = 5             # Fewer epochs may suffice for 14k rows
 BATCH_SIZE         = 16             # Reduce if running into memory issues
 EVAL_BATCH_SIZE    = 16
-LEARNING_RATE      = 2e-5
+LEARNING_RATE      = 3e-5
 WEIGHT_DECAY       = 0.05           # Increase weight decay for stronger regularization
-WARMUP_STEPS       = 200            # Lower, since total steps will be fewer
+WARMUP_STEPS       = 100            # Lower, since total steps will be fewer
 MAX_GRAD_NORM      = 1.0
 ACCUMULATION_STEPS = 5              # Set to 1 unless you need gradient accumulation
 
@@ -40,7 +40,7 @@ CUDA_DEVICE        = 0
 USE_AMP            = True
 
 ### Miscellaneous ###
-SEED               = 42
+SEED               = 239
 DATASET_PATH       = "./data/datasets/allsides_data_unstructured.csv"
 NICKNAME           = f"{NUM_EPOCHS}_epochs_{LEARNING_RATE}_lr_{MAX_SEQ_LENGTH}_seqlen"
 CHECKPOINTS_PATH   = os.path.join("trained_models", NICKNAME, "checkpoint")
