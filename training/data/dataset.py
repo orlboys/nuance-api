@@ -1,6 +1,8 @@
 #  Implements a custom Dataset class that loads and preprocesses your data, including tokenization and encoding.
 #  This is a PyTorch Dataset class that loads and preprocesses the data for training a model. It includes tokenization and encoding of the text data using a pre-trained BERT tokenizer.
 
+import glob
+import json
 import os
 import pandas as pd
 import torch
@@ -37,23 +39,121 @@ class BiasDataset(Dataset):
     Custom Dataset class for loading
     and preprocessing the bias detection dataset.
     """
-    def __init__(self, csv_file, augment=False): # augment is only True for the training set (see dataloader.py)
+    def __init__(self, json_files_path, augment=False): # augment is only True for the training set (see dataloader.py)
         """
-        Initializes the dataset with a CSV file, tokenizer, and maximum sequence length.
+        Initializes the dataset with a directory to JSON files containing content and bias labels, tokenizer, and maximum sequence length.
 
         Args:
-            csv_file (str): Path to the CSV file containing the dataset.
+            json_files_path (str): Path to directory containing JSON files or pattern to match JSON files
+            augment (bool): whether to apply data augmentation
         """
-        self.data = pd.read_csv("./data/datasets/test_data.csv") # <-- LOOK HERE IM READING FROM A FILE!!! 
         self.tokenizer = DistilBertTokenizer.from_pretrained(MODEL_NAME)
-        self.texts = self.data['text'].tolist() # List of texts
-        self.labels = self.data['label'].tolist() # List of labels
         self.augment = augment # Data augmentation flag
         if self.augment:
             self.augmenter = nas.SynonymAug(aug_p=AUG_PERCENTAGE, aug_src='wordnet')
 
+        self.texts, self.labels = self._load_json_data(json_files_path)
+
+    def _load_json_data(self, json_files_path):
+        """
+        Load data from JSON files containing "content_original" and "bias" fields.
+        
+        Args:
+            json_files_path (str): Path to directory or file pattern for JSON files
+            
+        Returns:
+            tuple: (texts, labels) lists
+        """
+
+        texts = []
+        labels = []
+
+        # Handle both directory path and file pattern
+        if os.path.isdir(json_files_path):
+            json_pattern = os.path.join(json_files_path, "*.json") # selects all jsons in the directory
+        else:
+            json_pattern = json_files_path # if its just a single file, it just takes that one.
+
+        json_files = glob.glob(json_pattern) # returns a list of all file paths that match the json pattern
+
+        if not json_files:
+            raise ValueError(f"No JSON files found matching pattersn {json_pattern}")
+        
+        print(f"Loading data from {len(json_files)} JSON files...")
+
+        ## Get JSON contents for each file in the file path
+        for file_path in json_files:
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+
+                    ## Handling both a single object being found, and an array of objects being found (for futureproofing)
+                    if isinstance(data, list):
+                        for item in data:
+                            if self._validate_item(item):
+                                texts.append(item['content'])
+                                labels.append(item['bias'])
+                    else:
+                        if self._validate_item(data):
+                            texts.append(item['content'])
+                            labels.append(item['bias'])
+
+            except (json.JSONDecodeError, KeyError, TypeError) as e:
+                print(f"Warning: Error processing file {file_path}: {e}")
+                continue
+        if not texts:
+            raise ValueError("No valid data found in JSON files")
+        
+        print(f"Loaded {len(texts)} samples")
+        print(f"Label distribution: {self._get_label_distribution(labels)}")
+        
+        return texts, labels
+    
+    def _validate_item(self, item):
+        """
+        Validate that an item has the required fields and valid values.
+        
+        Args:
+            item (dict): Data item to validate
+            
+        Returns:
+            bool: True if item is valid
+        """
+        if not isinstance(item, dict):
+            return False
+            
+        if 'content' not in item or 'bias' not in item:
+            return False
+            
+        if not isinstance(item['content'], str) or not item['content'].strip():
+            return False
+            
+        if item['bias'] not in [0, 1, 2]:
+            return False
+            
+        return True
+    
+    def _get_label_distribution(self, labels):
+        """
+        Get the distribution of labels for debugging/info purposes.
+        
+        Args:
+            labels (list): List of labels
+            
+        Returns:
+            dict: Label distribution
+        """
+        from collections import Counter
+        counter = Counter(labels)
+        return {
+            'left (0)': counter.get(0, 0),
+            'center (1)': counter.get(1, 0), 
+            'right (2)': counter.get(2, 0)
+        }
+
+
     def __len__(self):
-        return len(self.data)
+        return len(self.texts)
     
     def __getitem__(self, idx):
         """
@@ -75,7 +175,7 @@ class BiasDataset(Dataset):
             text,
             add_special_tokens=ADD_SPECIAL_TOKENS, # Add [CLS] and [SEP] tokens - these are standard in BERT
             max_length=MAX_SEQ_LENGTH,
-            padding='max_length' if PAD_TO_MAX_LENGTH else 'do_not_pad', # Pad to max_length (common practice in NLP tasks)
+            padding='max_length' if PAD_TO_MAX_LENGTH else False, # Pad to max_length (common practice in NLP tasks)
             truncation=TRUNCATION, # Truncate if longer than max_length
             return_tensors='pt', # Return PyTorch tensors
             return_attention_mask=True,
