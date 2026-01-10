@@ -11,8 +11,6 @@
 - Nuance-API serves as the backend logic behind the greater Nuance project
 	- [*Checkout orlboys/Nuance-Web for the frontend!*](https://github.com/orlboys/nuance-web)
 
-*Developed as part of the HSC Software Engineering course*
-
 ## Structure
 
 Nuance-API has two 'modules' tracked in the one repo:
